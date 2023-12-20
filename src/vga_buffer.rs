@@ -42,7 +42,7 @@ const BUFFER_WIDTH: usize = 80;
 
 use volatile::Volatile;
 
-//#[repr(transparent)]
+#[repr(transparent)]
 struct Buffer {
     chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
@@ -59,7 +59,7 @@ use spin::Mutex;
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
+        color_code: ColorCode::new(Color::Green, Color::Black),
         buffer: unsafe {&mut*(0xb8000 as *mut Buffer)},
     });
 }
@@ -161,8 +161,26 @@ pub fn _print(args: fmt::Arguments) {
     WRITER.lock().write_fmt(args).unwrap();
 }
 
+#[test_case]
+fn test_println_simple() {
+    println!("test_println_simple output");
+}
 
+#[test_case]
+fn test_println_many() {
+    for _ in 0..200 {
+        println!("test_println_many output");
+    }
+}
 
-
+#[test_case]
+fn test_println_output() {
+    let s = "Some test string that fits on a single line";
+    println!("{}", s);
+    for (i, c) in s.chars().enumerate() {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(screen_char.ascii_character), c);
+    }
+}
 
 
