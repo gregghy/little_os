@@ -1,0 +1,1 @@
+qemu-system-x86_64 -drive format=raw,file=little_os/target/x86_64-little_os/debug/bootimage-os.bin
